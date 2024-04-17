@@ -53,6 +53,12 @@ public class UserServiceImp implements UserService{
     public Optional<UserEntity> getUserById(Long id) {
         return userRepository.findById(id);
     }
+
+    @Override
+    public Optional<UserEntity> getUserByUserName(String name) {
+        return Optional.ofNullable(userRepository.findByUserName(name));
+    }
+
     @Override
     public List<UserEntity> GetAllUsers(){
       return userRepository.findAll();

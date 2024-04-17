@@ -11,6 +11,7 @@ public interface UserService {
     Long deleteUser(Long userId);
     Long updateUser(Long id, UserEntity userEntity);
     Optional<UserEntity> getUserById(Long id);
+    Optional<UserEntity> getUserByUserName(String name);
     List<UserEntity> GetAllUsers();
 
 
