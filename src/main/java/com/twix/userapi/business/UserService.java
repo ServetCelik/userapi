@@ -12,7 +12,9 @@ public interface UserService {
     Long updateUser(Long id, UserEntity userEntity);
     Optional<UserEntity> getUserById(Long id);
     Optional<UserEntity> getUserByUserName(String name);
-    List<UserEntity> GetAllUsers();
+    List<UserEntity> getAllUsers();
+    void followUser(Long userId, Long followId);
+    void unfollowUser(Long userId, Long unfollowId);
 
 
 }
