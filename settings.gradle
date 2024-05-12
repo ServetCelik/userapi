@@ -1,1 +1,8 @@
 rootProject.name = 'userapi'
+
+buildCache {
+    local {
+        enabled = true
+    }
+}
+
