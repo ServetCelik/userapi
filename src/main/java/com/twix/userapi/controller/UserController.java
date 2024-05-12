@@ -21,7 +21,7 @@ public class UserController {
 
     @GetMapping("/")
     public ResponseEntity<List<UserEntity>> getAllUsers(){
-        return ResponseEntity.ok(userService.GetAllUsers());
+        return ResponseEntity.ok(userService.getAllUsers());
     }
     @GetMapping("/id/{id}")
     public ResponseEntity<Optional<UserEntity>> getUserById(@PathVariable Long id){
@@ -48,6 +48,18 @@ public class UserController {
 
         return  ResponseEntity.status(HttpStatus.OK).
                 body(userService.updateUser(id,userEntity));
+    }
+
+    @PostMapping("/{userId}/follow/{followId}")
+    public ResponseEntity<Void> followUser(@PathVariable Long userId, @PathVariable Long followId) {
+        userService.followUser(userId, followId);
+        return ResponseEntity.status(HttpStatus.OK).build();
+    }
+
+    @PostMapping("/{userId}/unfollow/{unfollowId}")
+    public ResponseEntity<Void> unfollowUser(@PathVariable Long userId, @PathVariable Long unfollowId) {
+        userService.unfollowUser(userId, unfollowId);
+        return ResponseEntity.status(HttpStatus.OK).build();
     }
 }
 
