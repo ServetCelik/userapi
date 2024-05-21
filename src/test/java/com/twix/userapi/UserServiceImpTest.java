@@ -14,6 +14,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.amqp.core.DirectExchange;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,6 +35,9 @@ public class UserServiceImpTest {
 	@Mock
 	private DirectExchange exchange;
 
+	@Mock
+	private PasswordEncoder passwordEncoder;
+
 	@InjectMocks
 	private UserServiceImp userService;
 
@@ -52,6 +56,7 @@ public class UserServiceImpTest {
 		when(userRepository.existsByUserName(request.getUserName())).thenReturn(false);
 		when(userRepository.save(any(UserEntity.class))).thenReturn(user);
 		when(exchange.getName()).thenReturn("defaultExchange"); // Mock exchange name
+		when(passwordEncoder.encode("password")).thenReturn("encodedPassword");
 
 		Long userId = userService.createUser(request);
 
