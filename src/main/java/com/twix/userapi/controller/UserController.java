@@ -1,6 +1,9 @@
 package com.twix.userapi.controller;
 
 import com.twix.userapi.business.UserService;
+import com.twix.userapi.business.exceptions.InvalidCredentialsException;
+import com.twix.userapi.business.exceptions.UserNotExistException;
+import com.twix.userapi.controller.dto.LoginRequest;
 import com.twix.userapi.repository.UserEntity;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -34,6 +37,20 @@ public class UserController {
     public ResponseEntity<Long> createUser(@RequestBody CreateUserRequest createUserRequest) {
         return  ResponseEntity.status(HttpStatus.CREATED)
                 .body(userService.createUser(createUserRequest));
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<?> loginUser(@RequestBody LoginRequest loginRequest) {
+        try {
+            Optional<String> token = userService.loginUser(loginRequest.getUsername(), loginRequest.getPassword());
+            return token
+                    .map(ResponseEntity::ok)
+                    .orElseGet(() -> ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authentication failed"));
+        } catch (UserNotExistException | InvalidCredentialsException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while processing your request");
+        }
     }
 
     @DeleteMapping("/{id}")
