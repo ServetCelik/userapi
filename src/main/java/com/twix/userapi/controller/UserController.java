@@ -33,7 +33,7 @@ public class UserController {
     public ResponseEntity<Optional<UserEntity>> getUserByUsername(@PathVariable String userName){
         return ResponseEntity.ok(userService.getUserByUserName(userName));    }
 
-    @PostMapping("/")
+    @PostMapping("/register")
     public ResponseEntity<Long> createUser(@RequestBody CreateUserRequest createUserRequest) {
         return  ResponseEntity.status(HttpStatus.CREATED)
                 .body(userService.createUser(createUserRequest));
