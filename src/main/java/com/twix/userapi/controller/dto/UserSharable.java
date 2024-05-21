@@ -1,4 +1,4 @@
-package com.twix.userapi.controller.modals;
+package com.twix.userapi.controller.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

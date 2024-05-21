@@ -2,6 +2,7 @@ package com.twix.userapi.business;
 
 
 import com.google.gson.Gson;
+import com.twix.userapi.business.exceptions.InvalidCredentialsException;
 import com.twix.userapi.business.exceptions.UserNameAlreadyExistsException;
 import com.twix.userapi.business.exceptions.UserNotExistException;
 import com.twix.userapi.controller.CreateUserRequest;
@@ -12,7 +13,13 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.DirectExchange;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 import java.util.Optional;
@@ -23,6 +30,9 @@ public class UserServiceImp implements UserService {
     private final UserRepository userRepository;
     private final RabbitTemplate rabbitTemplate;
     private final DirectExchange exchange;
+    private final PasswordEncoder passwordEncoder;
+    @Autowired
+    private RestTemplate restTemplate;
 
     @Transactional
     @Override
@@ -34,9 +44,12 @@ public class UserServiceImp implements UserService {
             throw new UserNameAlreadyExistsException("Username " + user.getUserName() + " already exists.");
         }
 
+
+         String encodedPassword = passwordEncoder.encode(user.getPassword());
+
         UserEntity savedUser = userRepository.save(UserEntity.builder()
                 .userName(user.getUserName())
-                .password(user.getPassword())
+                .password(encodedPassword)
                 .build());
 
         log.info("User created with ID: {}", savedUser.getId());
@@ -50,10 +63,44 @@ public class UserServiceImp implements UserService {
         return savedUser.getId();
     }
 
+    @Override
+    public Optional<String> loginUser(String name, String password) {
+        Optional<UserEntity> userOptional = getUserByUserName(name);
+
+        if (userOptional.isEmpty()) {
+            log.warn("Username {} does not exist", name);
+            throw new UserNotExistException("Username " + name + " does not exist.");
+        }
+
+        UserEntity user = userOptional.get();
+
+        if (!matchesPassword(password, user.getPassword())) {
+            throw new InvalidCredentialsException("Incorrect username or password. Please try again.");
+        }
+
+        UserSharable userSharable = UserSharable.builder()
+                .id(user.getId())
+                .userName(user.getUserName())
+                .build();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON); // Correct way to set content type
+
+        HttpEntity<UserSharable> requestEntity = new HttpEntity<>(userSharable, headers);
+
+        String tokenUrl = "http://auth-api-service:8083/auth/generateAccessToken";
+        Optional<String> token = Optional.ofNullable(restTemplate.postForObject(tokenUrl, requestEntity, String.class));
+        return token;
+    }
+
     private boolean checkIfUserExistsByUserName(String name) {
         boolean exists = userRepository.existsByUserName(name);
         log.debug("Check if user exists by username {}: {}", name, exists);
         return exists;
+    }
+
+    private boolean matchesPassword(String rawPassword, String encodedPassword) {
+        return passwordEncoder.matches(rawPassword, encodedPassword);
     }
 
     @Transactional

@@ -8,6 +8,7 @@ import java.util.Optional;
 
 public interface UserService {
     Long createUser(CreateUserRequest user);
+    Optional<String>  loginUser(String name,String password);
     Long deleteUser(Long userId);
     Long updateUser(Long id, UserEntity userEntity);
     Optional<UserEntity> getUserById(Long id);
