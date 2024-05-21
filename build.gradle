@@ -6,12 +6,6 @@ plugins {
 	id "org.sonarqube" version "5.0.0.4638"
 }
 
-//sonar {
-//	properties {
-//		property "sonar.projectKey", "userapi"
-//		property "sonar.projectName", "userapi"
-//	}
-//}
 
 group = 'com.twix'
 version = '0.0.1-SNAPSHOT'
@@ -22,6 +16,12 @@ java {
 
 repositories {
 	mavenCentral()
+}
+
+configurations {
+	compileOnly {
+		extendsFrom annotationProcessor
+	}
 }
 
 dependencies {
@@ -35,6 +35,18 @@ dependencies {
 	implementation 'mysql:mysql-connector-java:8.0.30'
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'com.google.code.gson:gson:2.9.1'
+	implementation 'org.springframework.boot:spring-boot-starter-security'
+//	implementation 'io.jsonwebtoken:jjwt-api:0.11.2'
+//	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.2'
+//	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.2'
+//	implementation 'ch.qos.logback:logback-classic:1.2.11'
+//	implementation 'net.logstash.logback:logstash-logback-encoder:7.1.1'
+//	implementation 'org.springframework.boot:spring-boot-starter-validation'
+//	implementation 'org.springframework.boot:spring-boot-starter-batch'
+//	implementation 'org.springframework.boot:spring-boot-starter-aop'
+//	implementation 'org.springdoc:springdoc-openapi-ui:1.6.10'
+//	developmentOnly 'org.springframework.boot:spring-boot-devtools'
+	testImplementation 'org.springframework.security:spring-security-test'
 }
 
 //tasks.named('sonarqube').configure{
