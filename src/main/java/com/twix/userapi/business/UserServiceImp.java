@@ -17,7 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.security.crypto.password.PasswordEncoder;
+//import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -30,7 +30,7 @@ public class UserServiceImp implements UserService {
     private final UserRepository userRepository;
     private final RabbitTemplate rabbitTemplate;
     private final DirectExchange exchange;
-    private final PasswordEncoder passwordEncoder;
+//    private final PasswordEncoder passwordEncoder;
     @Autowired
     private RestTemplate restTemplate;
 
@@ -45,7 +45,8 @@ public class UserServiceImp implements UserService {
         }
 
 
-         String encodedPassword = passwordEncoder.encode(user.getPassword());
+//         String encodedPassword = passwordEncoder.encode(user.getPassword());
+        String encodedPassword = "1234";
 
         UserEntity savedUser = userRepository.save(UserEntity.builder()
                 .userName(user.getUserName())
@@ -74,9 +75,9 @@ public class UserServiceImp implements UserService {
 
         UserEntity user = userOptional.get();
 
-        if (!matchesPassword(password, user.getPassword())) {
-            throw new InvalidCredentialsException("Incorrect username or password. Please try again.");
-        }
+//        if (!matchesPassword(password, user.getPassword())) {
+//            throw new InvalidCredentialsException("Incorrect username or password. Please try again.");
+//        }
 
         UserSharable userSharable = UserSharable.builder()
                 .id(user.getId())
@@ -99,9 +100,9 @@ public class UserServiceImp implements UserService {
         return exists;
     }
 
-    private boolean matchesPassword(String rawPassword, String encodedPassword) {
-        return passwordEncoder.matches(rawPassword, encodedPassword);
-    }
+//    private boolean matchesPassword(String rawPassword, String encodedPassword) {
+//        return passwordEncoder.matches(rawPassword, encodedPassword);
+//    }
 
     @Transactional
     @Override
