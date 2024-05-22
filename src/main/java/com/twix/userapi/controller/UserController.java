@@ -41,16 +41,17 @@ public class UserController {
 
     @PostMapping("/login")
     public ResponseEntity<?> loginUser(@RequestBody LoginRequest loginRequest) {
-        try {
-            Optional<String> token = userService.loginUser(loginRequest.getUsername(), loginRequest.getPassword());
-            return token
-                    .map(ResponseEntity::ok)
-                    .orElseGet(() -> ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authentication failed"));
-        } catch (UserNotExistException | InvalidCredentialsException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while processing your request");
-        }
+        return (ResponseEntity<?>) ResponseEntity.ok();
+//        try {
+//            Optional<String> token = userService.loginUser(loginRequest.getUsername(), loginRequest.getPassword());
+//            return token
+//                    .map(ResponseEntity::ok)
+//                    .orElseGet(() -> ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authentication failed"));
+//        } catch (UserNotExistException | InvalidCredentialsException e) {
+//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
+//        } catch (Exception e) {
+//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while processing your request");
+//        }
     }
 
     @DeleteMapping("/{id}")
