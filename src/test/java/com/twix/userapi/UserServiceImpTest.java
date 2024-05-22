@@ -35,7 +35,7 @@ public class UserServiceImpTest {
 	@Mock
 	private DirectExchange exchange;
 
-	@Mock
+	//@Mock
 //	private PasswordEncoder passwordEncoder;
 
 	@InjectMocks
