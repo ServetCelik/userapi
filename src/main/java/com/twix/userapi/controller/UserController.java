@@ -27,11 +27,24 @@ public class UserController {
         return ResponseEntity.ok(userService.getAllUsers());
     }
     @GetMapping("/id/{id}")
-    public ResponseEntity<Optional<UserEntity>> getUserById(@PathVariable Long id){
-        return ResponseEntity.ok(userService.getUserById(id));    }
+    public ResponseEntity<?> getUserById(@PathVariable Long id){
+        Optional<UserEntity> userOptional = userService.getUserById(id);
+        if (userOptional.isPresent()) {
+            return ResponseEntity.ok(userOptional.get());
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
     @GetMapping("/username/{userName}")
-    public ResponseEntity<Optional<UserEntity>> getUserByUsername(@PathVariable String userName){
-        return ResponseEntity.ok(userService.getUserByUserName(userName));    }
+    public ResponseEntity<?> getUserByUsername(@PathVariable String userName){
+        Optional<UserEntity> userOptional = userService.getUserByUserName(userName);
+        if (userOptional.isPresent()) {
+            return ResponseEntity.ok(userOptional.get());
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
 
     @PostMapping("/register")
     public ResponseEntity<Long> createUser(@RequestBody CreateUserRequest createUserRequest) {
