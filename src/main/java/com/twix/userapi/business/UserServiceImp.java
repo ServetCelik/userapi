@@ -8,7 +8,6 @@ import com.twix.userapi.business.exceptions.UserNotExistException;
 import com.twix.userapi.controller.CreateUserRequest;
 import com.twix.userapi.repository.UserEntity;
 import com.twix.userapi.repository.UserRepository;
-import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.DirectExchange;
@@ -19,10 +18,12 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 import java.util.Optional;
+
 @Service
 @AllArgsConstructor
 @Slf4j
@@ -45,8 +46,7 @@ public class UserServiceImp implements UserService {
         }
 
 
-         String encodedPassword = passwordEncoder.encode(user.getPassword());
-//        String encodedPassword = "1234";
+        String encodedPassword = passwordEncoder.encode(user.getPassword());
 
         UserEntity savedUser = userRepository.save(UserEntity.builder()
                 .userName(user.getUserName())
@@ -140,34 +140,44 @@ public class UserServiceImp implements UserService {
         return updatedUser.getId();
     }
 
+    @Transactional(readOnly = true)
     @Override
     public Optional<UserEntity> getUserById(Long id) {
         log.info("Fetching user with ID: {}", id);
 
-        if (!checkIfUserExistsById(id)) {
+        Optional<UserEntity> user = userRepository.findById(id);
+        if (user.isEmpty()) {
             log.warn("User with ID {} does not exist", id);
             throw new UserNotExistException("User with ID " + id + " does not exist.");
         }
-
-        return userRepository.findById(id);
+        return user;
     }
 
+    @Transactional(readOnly = true)
     @Override
     public Optional<UserEntity> getUserByUserName(String name) {
         log.info("Fetching user with username: {}", name);
-        return Optional.ofNullable(userRepository.findByUserName(name));
+
+        Optional<UserEntity> user = userRepository.findByUserName(name);
+        if (user.isEmpty()) {
+            log.warn("User with username {} does not exist", name);
+            throw new UserNotExistException("User with username " + name + " does not exist.");
+        }
+        return user;
     }
 
+    @Transactional(readOnly = true)
     @Override
     public List<UserEntity> getAllUsers() {
         log.info("Fetching all users");
-        return userRepository.findAll();
+
+        List<UserEntity> users = userRepository.findAll();
+        return users;
     }
 
     @Transactional
     public void followUser(Long userId, Long followId) {
         log.info("User with ID {} following user with ID {}", userId, followId);
-
         Optional<UserEntity> userOpt = userRepository.findById(userId);
         Optional<UserEntity> followOpt = userRepository.findById(followId);
 
@@ -175,7 +185,7 @@ public class UserServiceImp implements UserService {
             UserEntity user = userOpt.get();
             UserEntity follow = followOpt.get();
 
-            user.getFollowings().add(follow);
+            user.addFollower(follow);
             userRepository.save(user);
 
             log.info("User with ID {} now follows user with ID {}", userId, followId);
@@ -195,7 +205,7 @@ public class UserServiceImp implements UserService {
             UserEntity user = userOpt.get();
             UserEntity unfollow = unfollowOpt.get();
 
-            user.getFollowings().remove(unfollow);
+            user.removeFollower(unfollow);
             userRepository.save(user);
 
             log.info("User with ID {} no longer follows user with ID {}", userId, unfollowId);
