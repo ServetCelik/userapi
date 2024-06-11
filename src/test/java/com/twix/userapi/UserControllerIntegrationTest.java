@@ -34,7 +34,7 @@ import java.util.Optional;
 public class UserControllerIntegrationTest {
 
     private MockMvc mockMvc;
-    private ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Mock
     private UserService userService;
@@ -52,7 +52,7 @@ public class UserControllerIntegrationTest {
 
     @Test
     public void getAllUsers_HappyPath() throws Exception {
-        List<UserEntity> users = Arrays.asList(new UserEntity(1L, "user1", "pass1", new HashSet<>(), new HashSet<>()));
+        List<UserEntity> users = List.of(new UserEntity(1L, "user1", "pass1", new HashSet<>(), new HashSet<>()));
         when(userService.getAllUsers()).thenReturn(users);
 
         mockMvc.perform(get("/user/"))

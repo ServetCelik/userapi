@@ -117,7 +117,6 @@ public class UserServiceImpTest {
 
 	@Test
 	void getUserById_success() {
-		when(userRepository.existsById(user.getId())).thenReturn(true);
 		when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
 
 		Optional<UserEntity> foundUser = userService.getUserById(user.getId());
@@ -128,14 +127,14 @@ public class UserServiceImpTest {
 
 	@Test
 	void getUserById_userNotExist() {
-		when(userRepository.existsById(user.getId())).thenReturn(false);
+		when(userRepository.findById(user.getId())).thenReturn(Optional.empty());
 
 		assertThrows(UserNotExistException.class, () -> userService.getUserById(user.getId()));
 	}
 
 	@Test
 	void getUserByUserName_success() {
-		when(userRepository.findByUserName(user.getUserName())).thenReturn(user);
+		when(userRepository.findByUserName(user.getUserName())).thenReturn(Optional.ofNullable(user));
 
 		Optional<UserEntity> foundUser = userService.getUserByUserName(user.getUserName());
 
