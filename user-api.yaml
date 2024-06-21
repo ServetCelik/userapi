@@ -1,0 +1,92 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: user-api-deployment
+  # namespace: ingress-nginx
+  labels:
+    app: user-api
+
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: user-api
+
+  template:
+    metadata:
+      labels:
+        app: user-api
+
+    spec:
+      containers:
+      - name: user-api
+        image: servetc/userapi:latest
+        # imagePullPolicy: IfNotPresent
+        imagePullPolicy: Always
+
+        ports:
+          - containerPort: 8082
+        resources:
+          limits:
+            cpu: 500m
+          requests:
+            cpu: 300m
+        env:
+        - name: SERVICE_TAGS
+          value: "dev"
+        - name: SERVICE_NAME
+          value: "backenduser"
+        - name: SPRING_APPLICATION_NAME
+          value: "user-api"
+        - name: SERVER_PORT
+          value: "8082"
+        - name: SPRING_RABBITMQ_HOST
+          value: "rabbitmq"
+        - name: SPRING_RABBITMQ_PORT
+          value: "5672"
+        - name: SPRING_RABBITMQ_USERNAME
+          value: "user"
+        - name: SPRING_RABBITMQ_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: all-secrets
+              key: RABBITMQ_DEFAULT_PASS_USERAPI
+        - name: RABBITMQ_EXCHANGE
+          value: "user_exchange"
+        - name: SPRING_JPA_HIBERNATE_DDL_AUTO
+          value: "update"
+        - name: SPRING_DATASOURCE_URL
+          value: "jdbc:mysql://twixdb.mysql.database.azure.com:3306/mydb?useSSL=true"
+        - name: SPRING_DATASOURCE_USERNAME
+          value: "twixdb"
+        - name: SPRING_DATASOURCE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: all-secrets
+              key: MYSQL_ROOT_PASSWORD_USERAPI
+        - name: SPRING_JPA_OPEN_IN_VIEW
+          value: "false"
+        - name: SPRING_JPA_SHOW_SQL
+          value: "true"
+        - name: SPRING_JPA_PROPERTIES_HIBERNATE_CONNECTION_AUTOCOMMIT
+          value: "false"
+        - name: SPRING_FLYWAY_BASELINE_ON_MIGRATE
+          value: "true"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: user-api-service
+  # namespace: ingress-nginx
+spec:
+  selector:
+    app: user-api
+  ports:
+    - protocol: TCP
+      port: 8082
+      targetPort: 8082
+  type: ClusterIP
+

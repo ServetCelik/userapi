@@ -53,3 +53,25 @@ jobs:
           file: Dockerfile.build
           tags: servetc/userapi:latest
 
+      - name: Login to Azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Install kubectl
+        run: |
+          curl -LO "https://storage.googleapis.com/kubernetes-release/release/`curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt`/bin/linux/amd64/kubectl"
+          chmod +x ./kubectl
+          sudo mv ./kubectl /usr/local/bin/kubectl
+
+      - name: Get AKS credentials
+        run: |
+          az aks get-credentials --resource-group twix --name twixCluster --overwrite-existing
+
+      - name: Deploy to Kubernetes
+        run: |
+          kubectl apply -f ./user-api.yaml --namespace=twix
+          kubectl set image deployment/user-api-deployment user-api=servetc/twix:latest --namespace=twix
+          kubectl rollout restart deployment/user-api-deployment --namespace=twix
+          kubectl rollout status deployment/user-api-deployment --namespace=twix
+

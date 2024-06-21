@@ -22,6 +22,11 @@ public class UserController {
     private final UserService userService;
 
 
+    @GetMapping("/test")
+    public ResponseEntity<String> getTestString() {
+
+        return ResponseEntity.ok("99");
+    }
     @GetMapping("/")
     public ResponseEntity<List<UserEntity>> getAllUsers(){
         return ResponseEntity.ok(userService.getAllUsers());
