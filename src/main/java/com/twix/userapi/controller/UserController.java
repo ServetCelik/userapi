@@ -25,7 +25,7 @@ public class UserController {
     @GetMapping("/test")
     public ResponseEntity<String> getTestString() {
 
-        return ResponseEntity.ok("99");
+        return ResponseEntity.ok("98");
     }
     @GetMapping("/")
     public ResponseEntity<List<UserEntity>> getAllUsers(){
