@@ -71,7 +71,7 @@ jobs:
       - name: Deploy to Kubernetes
         run: |
           kubectl apply -f ./user-api.yaml --namespace=twix
-          kubectl set image deployment/user-api-deployment user-api=servetc/twix:latest --namespace=twix
+          kubectl set image deployment/user-api-deployment user-api=servetc/userapi:latest --namespace=twix
           kubectl rollout restart deployment/user-api-deployment --namespace=twix
           kubectl rollout status deployment/user-api-deployment --namespace=twix
 
