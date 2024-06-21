@@ -3,7 +3,7 @@ kind: Deployment
 
 metadata:
   name: user-api-deployment
-  # namespace: ingress-nginx
+  namespace: twix
   labels:
     app: user-api
 
