@@ -5,7 +5,9 @@ import com.google.gson.Gson;
 import com.twix.userapi.business.exceptions.InvalidCredentialsException;
 import com.twix.userapi.business.exceptions.UserNameAlreadyExistsException;
 import com.twix.userapi.business.exceptions.UserNotExistException;
+import com.twix.userapi.business.mapper.UserConverter;
 import com.twix.userapi.controller.CreateUserRequest;
+import com.twix.userapi.controller.dto.UserDTO;
 import com.twix.userapi.repository.UserEntity;
 import com.twix.userapi.repository.UserRepository;
 import lombok.AllArgsConstructor;
@@ -66,7 +68,7 @@ public class UserServiceImp implements UserService {
 
     @Override
     public Optional<String> loginUser(String name, String password) {
-        Optional<UserEntity> userOptional = getUserByUserName(name);
+        Optional<UserEntity> userOptional = getByUserName(name);
 
         if (userOptional.isEmpty()) {
             log.warn("Username {} does not exist", name);
@@ -92,6 +94,16 @@ public class UserServiceImp implements UserService {
         String tokenUrl = "http://auth-api-service:8083/auth/generateAccessToken";
         Optional<String> token = Optional.ofNullable(restTemplate.postForObject(tokenUrl, requestEntity, String.class));
         return token;
+    }
+    private Optional<UserEntity> getByUserName(String name) {
+        log.info("Fetching user with username: {}", name);
+
+        Optional<UserEntity> user = userRepository.findByUserName(name);
+        if (user.isEmpty()) {
+            log.warn("User with username {} does not exist", name);
+            throw new UserNotExistException("User with username " + name + " does not exist.");
+        }
+        return user;
     }
 
     private boolean checkIfUserExistsByUserName(String name) {
@@ -142,7 +154,7 @@ public class UserServiceImp implements UserService {
 
     @Transactional(readOnly = true)
     @Override
-    public Optional<UserEntity> getUserById(Long id) {
+    public UserDTO getUserById(Long id) {
         log.info("Fetching user with ID: {}", id);
 
         Optional<UserEntity> user = userRepository.findById(id);
@@ -150,12 +162,12 @@ public class UserServiceImp implements UserService {
             log.warn("User with ID {} does not exist", id);
             throw new UserNotExistException("User with ID " + id + " does not exist.");
         }
-        return user;
+        return UserConverter.toUserDTO(user.get());
     }
 
     @Transactional(readOnly = true)
     @Override
-    public Optional<UserEntity> getUserByUserName(String name) {
+    public UserDTO getUserByUserName(String name) {
         log.info("Fetching user with username: {}", name);
 
         Optional<UserEntity> user = userRepository.findByUserName(name);
@@ -163,7 +175,7 @@ public class UserServiceImp implements UserService {
             log.warn("User with username {} does not exist", name);
             throw new UserNotExistException("User with username " + name + " does not exist.");
         }
-        return user;
+        return UserConverter.toUserDTO(user.get());
     }
 
     @Transactional(readOnly = true)

@@ -4,6 +4,7 @@ import com.twix.userapi.business.UserService;
 import com.twix.userapi.business.exceptions.InvalidCredentialsException;
 import com.twix.userapi.business.exceptions.UserNotExistException;
 import com.twix.userapi.controller.dto.LoginRequest;
+import com.twix.userapi.controller.dto.UserDTO;
 import com.twix.userapi.repository.UserEntity;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -33,20 +34,20 @@ public class UserController {
     }
     @GetMapping("/id/{id}")
     public ResponseEntity<?> getUserById(@PathVariable Long id){
-        Optional<UserEntity> userOptional = userService.getUserById(id);
-        if (userOptional.isPresent()) {
-            return ResponseEntity.ok(userOptional.get());
-        } else {
+        try {
+            UserDTO userDTO = userService.getUserById(id);
+            return ResponseEntity.ok(userDTO);
+        } catch (UserNotExistException e) {
             return ResponseEntity.notFound().build();
         }
     }
 
     @GetMapping("/username/{userName}")
     public ResponseEntity<?> getUserByUsername(@PathVariable String userName){
-        Optional<UserEntity> userOptional = userService.getUserByUserName(userName);
-        if (userOptional.isPresent()) {
-            return ResponseEntity.ok(userOptional.get());
-        } else {
+        try {
+            UserDTO userDTO = userService.getUserByUserName(userName);
+            return ResponseEntity.ok(userDTO);
+        } catch (UserNotExistException e) {
             return ResponseEntity.notFound().build();
         }
     }

@@ -13,6 +13,7 @@ import com.twix.userapi.business.exceptions.UserNameAlreadyExistsException;
 import com.twix.userapi.business.exceptions.UserNotExistException;
 import com.twix.userapi.controller.CreateUserRequest;
 import com.twix.userapi.controller.dto.LoginRequest;
+import com.twix.userapi.controller.dto.UserDTO;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -63,8 +64,8 @@ public class UserControllerIntegrationTest {
 
     @Test
     public void getUserById_HappyPath() throws Exception {
-        Optional<UserEntity> user = Optional.of(new UserEntity(1L, "user1", "password", new HashSet<>(), new HashSet<>()));
-        when(userService.getUserById(1L)).thenReturn(user);
+        UserDTO userDTO = new UserDTO(1L, "user1", new HashSet<>(), new HashSet<>());
+        when(userService.getUserById(1L)).thenReturn(userDTO);
 
         mockMvc.perform(get("/user/id/1"))
                 .andExpect(status().isOk())
@@ -74,7 +75,7 @@ public class UserControllerIntegrationTest {
 
     @Test
     public void getUserById_UserNotFound() throws Exception {
-        when(userService.getUserById(1L)).thenReturn(Optional.empty());
+        when(userService.getUserById(1L)).thenThrow(new UserNotExistException("User with id 1 does not exist."));
 
         mockMvc.perform(get("/user/id/1"))
                 .andExpect(status().isNotFound());
@@ -130,16 +131,17 @@ public class UserControllerIntegrationTest {
 
     @Test
     public void getUserByUsername_UserExists() throws Exception {
-        UserEntity user = new UserEntity(1L, "existingUser", "password", new HashSet<>(), new HashSet<>());
-        when(userService.getUserByUserName("existingUser")).thenReturn(Optional.of(user));
+        UserDTO userDTO = new UserDTO(1L, "existingUser", new HashSet<>(), new HashSet<>());
+        when(userService.getUserByUserName("existingUser")).thenReturn(userDTO);
 
         mockMvc.perform(get("/user/username/existingUser"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.userName", is("existingUser")));
     }
+
     @Test
     public void getUserByUsername_UserNotFound() throws Exception {
-        when(userService.getUserByUserName("nonExistingUser")).thenReturn(Optional.empty());
+        when(userService.getUserByUserName("nonExistingUser")).thenThrow(new UserNotExistException("User with username nonExistingUser does not exist."));
 
         mockMvc.perform(get("/user/username/nonExistingUser"))
                 .andExpect(status().isNotFound());

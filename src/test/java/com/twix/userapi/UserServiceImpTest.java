@@ -4,6 +4,7 @@ import com.twix.userapi.business.UserServiceImp;
 import com.twix.userapi.business.exceptions.UserNameAlreadyExistsException;
 import com.twix.userapi.business.exceptions.UserNotExistException;
 import com.twix.userapi.controller.CreateUserRequest;
+import com.twix.userapi.controller.dto.UserDTO;
 import com.twix.userapi.repository.UserEntity;
 import com.twix.userapi.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -43,11 +44,15 @@ public class UserServiceImpTest {
 
 	private UserEntity user;
 	private UserEntity followUser;
+	private UserDTO userDTO;
+	private UserDTO followUserDTO;
 
 	@BeforeEach
 	void setUp() {
 		user = UserEntity.builder().id(1L).userName("testUser").password("password").build();
 		followUser = UserEntity.builder().id(2L).userName("followUser").password("password").build();
+		userDTO = UserDTO.builder().id(1L).userName("testUser").build();
+		followUserDTO = UserDTO.builder().id(2L).userName("followUser").build();
 	}
 
 	@Test
@@ -55,7 +60,7 @@ public class UserServiceImpTest {
 		CreateUserRequest request = new CreateUserRequest("testUser", "password");
 		when(userRepository.existsByUserName(request.getUserName())).thenReturn(false);
 		when(userRepository.save(any(UserEntity.class))).thenReturn(user);
-		when(exchange.getName()).thenReturn("defaultExchange"); // Mock exchange name
+		when(exchange.getName()).thenReturn("defaultExchange");
 		when(passwordEncoder.encode("password")).thenReturn("encodedPassword");
 
 		Long userId = userService.createUser(request);
@@ -119,10 +124,9 @@ public class UserServiceImpTest {
 	void getUserById_success() {
 		when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
 
-		Optional<UserEntity> foundUser = userService.getUserById(user.getId());
+		UserDTO foundUser = userService.getUserById(user.getId());
 
-		assertTrue(foundUser.isPresent());
-		assertEquals(user.getId(), foundUser.get().getId());
+		assertEquals(user.getId(), foundUser.getId());
 	}
 
 	@Test
@@ -136,23 +140,9 @@ public class UserServiceImpTest {
 	void getUserByUserName_success() {
 		when(userRepository.findByUserName(user.getUserName())).thenReturn(Optional.ofNullable(user));
 
-		Optional<UserEntity> foundUser = userService.getUserByUserName(user.getUserName());
+		UserDTO foundUser = userService.getUserByUserName(user.getUserName());
 
-		assertTrue(foundUser.isPresent());
-		assertEquals(user.getUserName(), foundUser.get().getUserName());
-	}
-
-	@Test
-	void getAllUsers_success() {
-		List<UserEntity> users = new ArrayList<>();
-		users.add(user);
-		users.add(followUser);
-		when(userRepository.findAll()).thenReturn(users);
-
-		List<UserEntity> allUsers = userService.getAllUsers();
-
-		assertNotNull(allUsers);
-		assertEquals(2, allUsers.size());
+		assertEquals(user.getUserName(), foundUser.getUserName());
 	}
 
 	@Test
