@@ -1,6 +1,5 @@
 package com.twix.userapi.business;
 
-import io.jsonwebtoken.Claims;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -12,8 +11,8 @@ public class TokenServiceImp implements TokenService{
     public boolean isAuthorized(String token, Long idFromParams) {
         if (token != null && token.startsWith("Bearer ")) {
             token = token.substring(7);
-            Claims claims = jwtTokenProvider.getClaimsFromToken(token);
-            Long userId = claims.get("userId", Long.class);
+            JwtClaims claims = jwtTokenProvider.getClaimsFromToken(token);
+            Long userId = claims.getUserId();
             return userId.equals(idFromParams);
         }
         return false;
@@ -22,8 +21,8 @@ public class TokenServiceImp implements TokenService{
     public boolean isAuthorized(String token, String idFromParams) {
         if (token != null && token.startsWith("Bearer ")) {
             token = token.substring(7);
-            Claims claims = jwtTokenProvider.getClaimsFromToken(token);
-            String subject = claims.get("sub", String.class);
+            JwtClaims claims = jwtTokenProvider.getClaimsFromToken(token);
+            String subject = claims.getSubject();
             return subject.equals(idFromParams);
         }
         return false;
