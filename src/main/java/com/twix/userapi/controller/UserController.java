@@ -1,5 +1,6 @@
 package com.twix.userapi.controller;
 
+import com.twix.userapi.business.TokenService;
 import com.twix.userapi.business.UserService;
 import com.twix.userapi.business.exceptions.InvalidCredentialsException;
 import com.twix.userapi.business.exceptions.UserNotExistException;
@@ -17,10 +18,10 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/user")
 @RequiredArgsConstructor
-//@CrossOrigin("http://localhost:3000")
 @CrossOrigin(origins = "*")
 public class UserController {
     private final UserService userService;
+    private final TokenService tokenService;
 
 
     @GetMapping("/test")
@@ -33,22 +34,30 @@ public class UserController {
         return ResponseEntity.ok(userService.getAllUsers());
     }
     @GetMapping("/id/{id}")
-    public ResponseEntity<?> getUserById(@PathVariable Long id){
-        try {
-            UserDTO userDTO = userService.getUserById(id);
-            return ResponseEntity.ok(userDTO);
-        } catch (UserNotExistException e) {
-            return ResponseEntity.notFound().build();
+    public ResponseEntity<?> getUserById(@PathVariable Long id, @RequestHeader("Authorization") String token){
+        if (tokenService.isAuthorized(token,id)){
+            try {
+                UserDTO userDTO = userService.getUserById(id);
+                return ResponseEntity.ok(userDTO);
+            } catch (UserNotExistException e) {
+                return ResponseEntity.notFound().build();
+            }
+        }else{
+            return ResponseEntity.status(403).body("Forbidden");
         }
     }
 
     @GetMapping("/username/{userName}")
-    public ResponseEntity<?> getUserByUsername(@PathVariable String userName){
-        try {
-            UserDTO userDTO = userService.getUserByUserName(userName);
-            return ResponseEntity.ok(userDTO);
-        } catch (UserNotExistException e) {
-            return ResponseEntity.notFound().build();
+    public ResponseEntity<?> getUserByUsername(@PathVariable String userName, @RequestHeader("Authorization") String token){
+        if (tokenService.isAuthorized(token,userName)){
+            try {
+                UserDTO userDTO = userService.getUserByUserName(userName);
+                return ResponseEntity.ok(userDTO);
+            } catch (UserNotExistException e) {
+                return ResponseEntity.notFound().build();
+            }
+        }else{
+            return ResponseEntity.status(403).body("Forbidden");
         }
     }
 
@@ -73,38 +82,44 @@ public class UserController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Long> deleteUser(@PathVariable Long id) {
+    public ResponseEntity<Long> deleteUser(@PathVariable Long id, @RequestHeader("Authorization") String token) {
+        if (tokenService.isAuthorized(token,id)){
+        }else{
+            return ResponseEntity.status(403).body(id);
+        }
         return  ResponseEntity.status(HttpStatus.OK)
                 .body(userService.deleteUser(id));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<Long> updateUser(@PathVariable("id") long id
-            ,@RequestBody UserEntity userEntity) {
+            ,@RequestBody UserEntity userEntity, @RequestHeader("Authorization") String token) {
+        if (tokenService.isAuthorized(token,id)){
+        }else{
+            return ResponseEntity.status(403).body(id);
+        }
 
         return  ResponseEntity.status(HttpStatus.OK).
                 body(userService.updateUser(id,userEntity));
     }
 
     @PostMapping("/{userId}/follow/{followId}")
-    public ResponseEntity<Void> followUser(@PathVariable Long userId, @PathVariable Long followId) {
+    public ResponseEntity<Void> followUser(@PathVariable Long userId, @PathVariable Long followId, @RequestHeader("Authorization") String token) {
+        if (tokenService.isAuthorized(token,userId)){
+        }else{
+            return ResponseEntity.status(403).build();
+        }
         userService.followUser(userId, followId);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
     @PostMapping("/{userId}/unfollow/{unfollowId}")
-    public ResponseEntity<Void> unfollowUser(@PathVariable Long userId, @PathVariable Long unfollowId) {
+    public ResponseEntity<Void> unfollowUser(@PathVariable Long userId, @PathVariable Long unfollowId, @RequestHeader("Authorization") String token) {
+        if (tokenService.isAuthorized(token,userId)){
+        }else{
+            return ResponseEntity.status(403).build();
+        }
         userService.unfollowUser(userId, unfollowId);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 }
-
-
-
-
-
-//        rabbitTemplate.convertAndSend("userUpdated", "#", null, m -> {
-//            m.getMessageProperties().getHeaders().put("MessageType", "CreateTweetEvent");
-//            return m;
-//        });
-//return ResponseEntity.ok(userService.GetAllUsers());

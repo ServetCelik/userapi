@@ -17,8 +17,6 @@ import org.springframework.amqp.core.DirectExchange;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -44,15 +42,11 @@ public class UserServiceImpTest {
 
 	private UserEntity user;
 	private UserEntity followUser;
-	private UserDTO userDTO;
-	private UserDTO followUserDTO;
 
 	@BeforeEach
 	void setUp() {
 		user = UserEntity.builder().id(1L).userName("testUser").password("password").build();
 		followUser = UserEntity.builder().id(2L).userName("followUser").password("password").build();
-		userDTO = UserDTO.builder().id(1L).userName("testUser").build();
-		followUserDTO = UserDTO.builder().id(2L).userName("followUser").build();
 	}
 
 	@Test

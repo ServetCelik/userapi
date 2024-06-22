@@ -87,7 +87,7 @@ public class UserServiceImp implements UserService {
                 .build();
 
         HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON); // Correct way to set content type
+        headers.setContentType(MediaType.APPLICATION_JSON);
 
         HttpEntity<UserSharable> requestEntity = new HttpEntity<>(userSharable, headers);
 

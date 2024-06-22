@@ -8,6 +8,7 @@ import static org.mockito.ArgumentMatchers.any;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.twix.userapi.business.GlobalExceptionHandler;
+import com.twix.userapi.business.TokenService;
 import com.twix.userapi.business.exceptions.InvalidCredentialsException;
 import com.twix.userapi.business.exceptions.UserNameAlreadyExistsException;
 import com.twix.userapi.business.exceptions.UserNotExistException;
@@ -39,6 +40,8 @@ public class UserControllerIntegrationTest {
 
     @Mock
     private UserService userService;
+    @Mock
+    private TokenService tokenService;
 
     @InjectMocks
     private UserController userController;
@@ -49,6 +52,9 @@ public class UserControllerIntegrationTest {
     @BeforeEach
     void setup() {
         mockMvc = MockMvcBuilders.standaloneSetup(userController, globalExceptionHandler).build();
+        lenient().when(tokenService.isAuthorized(anyString(), anyString())).thenReturn(false);
+        lenient().when(tokenService.isAuthorized(anyString(), eq("user1"))).thenReturn(true);
+        lenient().when(tokenService.isAuthorized(anyString(),eq(1L))).thenReturn(true);
     }
 
     @Test
@@ -67,7 +73,8 @@ public class UserControllerIntegrationTest {
         UserDTO userDTO = new UserDTO(1L, "user1", new HashSet<>(), new HashSet<>());
         when(userService.getUserById(1L)).thenReturn(userDTO);
 
-        mockMvc.perform(get("/user/id/1"))
+        mockMvc.perform(get("/user/id/1")
+                .header("Authorization", "Bearer validToken"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(1)))
                 .andExpect(jsonPath("$.userName", is("user1")));
@@ -77,7 +84,8 @@ public class UserControllerIntegrationTest {
     public void getUserById_UserNotFound() throws Exception {
         when(userService.getUserById(1L)).thenThrow(new UserNotExistException("User with id 1 does not exist."));
 
-        mockMvc.perform(get("/user/id/1"))
+        mockMvc.perform(get("/user/id/1")
+                .header("Authorization", "Bearer validToken"))
                 .andExpect(status().isNotFound());
     }
 
@@ -131,26 +139,29 @@ public class UserControllerIntegrationTest {
 
     @Test
     public void getUserByUsername_UserExists() throws Exception {
-        UserDTO userDTO = new UserDTO(1L, "existingUser", new HashSet<>(), new HashSet<>());
-        when(userService.getUserByUserName("existingUser")).thenReturn(userDTO);
+        UserDTO userDTO = new UserDTO(1L, "user1", new HashSet<>(), new HashSet<>());
+        when(userService.getUserByUserName("user1")).thenReturn(userDTO);
 
-        mockMvc.perform(get("/user/username/existingUser"))
+        mockMvc.perform(get("/user/username/user1")
+                .header("Authorization", "Bearer validToken"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.userName", is("existingUser")));
+                .andExpect(jsonPath("$.userName", is("user1")));
     }
 
     @Test
     public void getUserByUsername_UserNotFound() throws Exception {
-        when(userService.getUserByUserName("nonExistingUser")).thenThrow(new UserNotExistException("User with username nonExistingUser does not exist."));
+        when(userService.getUserByUserName("user1")).thenThrow(new UserNotExistException("User with username nonExistingUser does not exist."));
 
-        mockMvc.perform(get("/user/username/nonExistingUser"))
+        mockMvc.perform(get("/user/username/user1")
+                .header("Authorization", "Bearer validToken"))
                 .andExpect(status().isNotFound());
     }
     @Test
     public void deleteUser_UserNotFound() throws Exception {
         when(userService.deleteUser(1L)).thenThrow(new UserNotExistException("User not found"));
 
-        mockMvc.perform(delete("/user/1"))
+        mockMvc.perform(delete("/user/1")
+                .header("Authorization", "Bearer validToken"))
                 .andExpect(status().isNotFound());
     }
 
@@ -158,7 +169,8 @@ public class UserControllerIntegrationTest {
     public void deleteUser_SuccessfulDeletion() throws Exception {
         when(userService.deleteUser(1L)).thenReturn(1L);  // Assuming the service returns the ID of the deleted user
 
-        mockMvc.perform(delete("/user/1"))
+        mockMvc.perform(delete("/user/1")
+                .header("Authorization", "Bearer validToken"))
                 .andExpect(status().isOk())
                 .andExpect(content().string("1"));
     }
@@ -169,6 +181,7 @@ public class UserControllerIntegrationTest {
         when(userService.updateUser(1L, userToUpdate)).thenThrow(new UserNotExistException("User not found"));
 
         mockMvc.perform(put("/user/1")
+                        .header("Authorization", "Bearer validToken")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(userToUpdate)))
                 .andExpect(status().isNotFound());
@@ -180,6 +193,7 @@ public class UserControllerIntegrationTest {
         when(userService.updateUser(1L, userToUpdate)).thenReturn(1L);
 
         mockMvc.perform(put("/user/1")
+                        .header("Authorization", "Bearer validToken")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(userToUpdate)))
                 .andExpect(status().isOk())
@@ -189,7 +203,8 @@ public class UserControllerIntegrationTest {
     public void followUser_Success() throws Exception {
         doNothing().when(userService).followUser(1L, 2L);
 
-        mockMvc.perform(post("/user/1/follow/2"))
+        mockMvc.perform(post("/user/1/follow/2")
+                .header("Authorization", "Bearer validToken"))
                 .andExpect(status().isOk());
     }
 }
